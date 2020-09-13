@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.25)
-fig.canvas.set_window_title('RSPRO by jaromeyer')
+fig.canvas.set_window_title('blackbox2gpmf by jaromeyer')
 
 gp_gyro, gp_offset, bbl_gyro, bbl_frame = [[]] * 4
 bbl_plot, gp_file, gp_offsets = [None] * 3
