@@ -103,12 +103,12 @@ def load_bbl(event):
         bbl_nof_samples = int(bbl_duration*samplerate)
 
         # downsample & save as bbl_gyro[sample][axis]
-        bbl_x = signal.resample(
-            [-33*i for i in bbl_df[gyro_index].tolist()], bbl_nof_samples)
-        bbl_y = signal.resample(
-            [-33*i for i in bbl_df[gyro_index+1].tolist()], bbl_nof_samples)
-        bbl_z = signal.resample(
-            [33*i for i in bbl_df[gyro_index+2].tolist()], bbl_nof_samples)
+        bbl_x = np.clip(signal.resample(
+            [-33*i for i in bbl_df[gyro_index].tolist()], bbl_nof_samples), a_min=-32768, a_max=32767)
+        bbl_y = np.clip(signal.resample(
+            [-33*i for i in bbl_df[gyro_index+1].tolist()], bbl_nof_samples), a_min=-32768, a_max=32767)
+        bbl_z = np.clip(signal.resample(
+            [33*i for i in bbl_df[gyro_index+2].tolist()], bbl_nof_samples), a_min=-32768, a_max=32767)
         bbl_gyro = np.column_stack((bbl_x, bbl_y, bbl_z))
 
         update_frame(0)
@@ -128,25 +128,21 @@ def patch(event):
 
     # loop over gp_offsets and write bbl_gyro
     for i, sample in enumerate(gp_offsets):
-        x, y, z = bbl_frame[i]
-
-    for axis in [x, y, z]:
-        if axis > 32767:
-            axis = 32767
-        elif axis < -32768:
-            axis = -32768
+        x = int(bbl_frame[i][0])
+        y = int(bbl_frame[i][1])
+        z = int(bbl_frame[i][2])
 
         gp.seek(sample)
-        gp.write(int(x).to_bytes(2, byteorder='big', signed=True))
+        gp.write(x.to_bytes(2, byteorder='big', signed=True))
         gp.seek(sample + 2)
-        gp.write(int(y).to_bytes(2, byteorder='big', signed=True))
+        gp.write(y.to_bytes(2, byteorder='big', signed=True))
         gp.seek(sample + 4)
-        gp.write(int(z).to_bytes(2, byteorder='big', signed=True))
+        gp.write(z.to_bytes(2, byteorder='big', signed=True))
     gp.close()
 
     # change metadata to fake a hero6
-    # subprocess.run(
-    #   ['exiftool', '-FirmwareVersion=HD6.01.01.60.00', '-Model="HERO6 Black"', '-overwrite_original', output_file])
+    subprocess.run(['exiftool', '-FirmwareVersion=HD6.01.01.60.00',
+                    '-Model="HERO6 Black"', '-overwrite_original', output_file])
     messagebox.showinfo(
         title="Done", message="Successfully patched %s" % output_file)
 
