@@ -46,16 +46,17 @@ def load_gp(event):
         for batch_offset in gp_batch_offsets:
             batch_nof_sample = int.from_bytes(
                 gp_array[batch_offset + 6:batch_offset + 8], "big")
-            for sample in range(batch_nof_sample):
-                sample_offset = batch_offset + sample * 6 + 8
-                x = int.from_bytes(
-                    gp_array[sample_offset:sample_offset + 2], byteorder='big', signed=True)
-                y = int.from_bytes(
-                    gp_array[sample_offset + 2:sample_offset + 4], byteorder='big', signed=True)
-                z = int.from_bytes(
-                    gp_array[sample_offset + 4:sample_offset + 6], byteorder='big', signed=True)
-                gp_gyro.append([x, y, z])
-                gp_offsets.append(sample_offset)
+            if batch_nof_sample < 200:
+                for sample in range(batch_nof_sample):
+                    sample_offset = batch_offset + sample * 6 + 8
+                    x = int.from_bytes(
+                        gp_array[sample_offset:sample_offset + 2], byteorder='big', signed=True)
+                    y = int.from_bytes(
+                        gp_array[sample_offset + 2:sample_offset + 4], byteorder='big', signed=True)
+                    z = int.from_bytes(
+                        gp_array[sample_offset + 4:sample_offset + 6], byteorder='big', signed=True)
+                    gp_gyro.append([x, y, z])
+                    gp_offsets.append(sample_offset)
 
         # clear axis and draw both plots
         ax.cla()
